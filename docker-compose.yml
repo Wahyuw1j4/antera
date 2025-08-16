@@ -8,6 +8,7 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:lawrance24@db:5432/antera2?schema=public
     volumes:
       - .:/app
