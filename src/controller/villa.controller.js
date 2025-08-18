@@ -40,11 +40,10 @@ class VillaController {
             lokasi: z.string().min(1, "Lokasi is required"),
         });
 
-        console.log("ini body", req.body);
-
         const parseResult = villaSchema.safeParse(req.body);
         if (!parseResult.success) {
-            return res.status(400).json({ errors: parseResult.error.errors });
+            const parseMessage = JSON.parse(parseResult.error.message, null, 2)[0];
+            return res.status(400).json({ status: "error", path: parseMessage.path[0], message: parseMessage.message });
         }
 
         const { name, harga, lokasi } = parseResult.data;
@@ -71,7 +70,19 @@ class VillaController {
 
     inputRoi = async (req, res) => {
         try {
-            const {hargaVilla, okupasi, tarifHarian } = req.body;
+            const roiSchema = z.object({
+                hargaVilla: z.coerce.number().positive("Harga Villa harus berupa angka positif"),
+                okupasi: z.coerce.number().min(0, "Okupasi minimal 0").max(100, "Okupasi maksimal 100"),
+                tarifHarian: z.coerce.number().positive("Tarif Harian harus berupa angka positif"),
+            });
+
+            const parseResult = roiSchema.safeParse(req.body);
+            if (!parseResult.success) {
+                const parseMessage = parseResult.error.issues[0];
+                return res.status(400).json({ status: "error", path: parseMessage.path[0], message: parseMessage.message });
+            }
+
+            const { hargaVilla, okupasi, tarifHarian } = parseResult.data;
 
             if (!hargaVilla || !okupasi || !tarifHarian) {
                 return res.status(400).json({ error: "Semua field wajib diisi" });
